@@ -1,11 +1,10 @@
 import { neon } from "@neondatabase/serverless"
 
-// Define the database URL with fallback
-const DATABASE_URL =
-  process.env.DATABASE_URL ||
-  "postgresql://neondb_owner:npg_IUNQmbw2Yr5O@ep-empty-queen-aen5u557-pooler.c-2.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+// Now it will use your .env.local file properly!
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL environment variable is not set')
+}
 
-// Initialize the SQL connection
-const sql = neon(DATABASE_URL)
+const sql = neon(process.env.DATABASE_URL)
 
 export { sql }
