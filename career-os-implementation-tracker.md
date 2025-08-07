@@ -469,9 +469,9 @@ export async function fetchUserDashboardData(userId: number): Promise<UserDashbo
 
 ### Phase 1: Core Flow (Week 1) ✅
 ```
-1. Build assessment form in V0.dev
-2. Connect to Neon Postgres database (already set up)
-3. Create API endpoints:
+[ ] 1. Build assessment form in V0.dev- Difficutly using v0.dev because it continues to change questions, flow and dashboard each time
+[X] 2. Connect to Neon Postgres database (already set up)
+[X] 3. Create API endpoints:
    - POST /api/assessment (save responses)
    - GET /api/user/:id/score (get readiness score)
    - GET /api/metrics/industry/:industry (benchmarks)
