@@ -17,7 +17,7 @@ Before building any component, identify:
 
 ### Current Tables in Your Database
 
-```sql
+\`\`\`sql
 -- 1. USERS TABLE (PRIMARY - Already Created)
 users {
   id: SERIAL PRIMARY KEY  -- INTEGER auto-increment
@@ -109,7 +109,7 @@ module_progress {
 -- FUTURE PREMIUM TABLES (Not Created Yet)
 -- life_vision, goals_hierarchy, goal_milestones, etc.
 -- (See Career OS 10-Year Goals Database Architecture)
-```
+\`\`\`
 
 ### ⚠️ CRITICAL FOR V0.DEV: Data Types Matter!
 
@@ -124,7 +124,7 @@ module_progress {
 ## 🔄 V0.DEV COMPONENT MAPPING (React/TypeScript)
 
 ### 1. Assessment Form Component (With Marketing Principles)
-```typescript
+\`\`\`typescript
 // AssessmentForm.tsx
 interface AssessmentFormProps {
   onComplete: (score: number) => void
@@ -253,10 +253,10 @@ const AssessmentForm = ({ onComplete, userId, userType }: AssessmentFormProps) =
 export async function trackUserFeedback(data: any) {
   // Store feedback for product iteration
 }
-```
+\`\`\`
 
 ### 2. Dashboard Component (With Marketing Principles)
-```typescript
+\`\`\`typescript
 // Dashboard.tsx
 interface DashboardProps {
   userId: number
@@ -444,7 +444,7 @@ export async function fetchUserDashboardData(userId: number): Promise<UserDashbo
   `
   // Execute query with Neon
 }
-```
+\`\`\`
 
 ---
 
@@ -468,27 +468,27 @@ export async function fetchUserDashboardData(userId: number): Promise<UserDashbo
 ## 🚀 IMPLEMENTATION SEQUENCE
 
 ### Phase 1: Core Flow (Week 1) ✅
-```
+\`\`\`
 1. Build assessment form in V0.dev
 2. Connect to Neon Postgres database (already set up)
 3. Create API endpoints:
    - POST /api/assessment (save responses)
    - GET /api/user/:id/score (get readiness score)
    - GET /api/metrics/industry/:industry (benchmarks)
-```
+\`\`\`
 
 ### Phase 2: Basic Dashboard (Week 2)
-```
+\`\`\`
 1. Build dashboard layout in V0.dev
 2. Create components:
    - ReadinessScore (big number)
    - JourneyProgress (progress bar)
    - IndustryComparison (simple chart)
 3. Connect to database
-```
+\`\`\`
 
 ### Phase 3: N8N AI Research System (Week 3) 🆕
-```
+\`\`\`
 1. Set up N8N instance (self-hosted or cloud)
 2. Configure AI connections (OpenAI/Claude/Perplexity)
 3. Build core workflows:
@@ -497,30 +497,30 @@ export async function fetchUserDashboardData(userId: number): Promise<UserDashbo
    - Personalized Learning Path Creator
 4. Create webhook endpoints
 5. Test with sample assessments
-```
+\`\`\`
 
 ### Phase 4: Newsletter System (Week 4)
-```
+\`\`\`
 1. Set up email service (SendGrid/Resend)
 2. Create newsletter templates
 3. Build N8N newsletter workflow
 4. Set up Monday morning cron jobs
-```
+\`\`\`
 
 ### Phase 5: Community Insights (Week 5)
-```
+\`\`\`
 1. Build aggregate queries
 2. Create public dashboard
 3. Add share functionality
 4. Generate LinkedIn templates
-```
+\`\`\`
 
 ---
 
 ## 🤖 N8N AI RESEARCH SYSTEM IMPLEMENTATION
 
 ### Prerequisites Setup
-```yaml
+\`\`\`yaml
 N8N Installation:
   Option 1 - Cloud: 
     - Use n8n.cloud (fastest setup)
@@ -542,11 +542,11 @@ API Keys Needed:
   - Anthropic Claude API Key (claude-3-opus for deep research)
   - Perplexity API Key (for real-time market research)
   - Your Neon Database URL
-```
+\`\`\`
 
 ### WORKFLOW 1: AI-Powered Next Steps Generator with Deep Research
 
-```json
+\`\`\`json
 {
   "name": "Generate_Personalized_Next_Steps_With_Research",
   "nodes": [
@@ -646,11 +646,11 @@ API Keys Needed:
     }
   ]
 }
-```
+\`\`\`
 
 ### WORKFLOW 2: Weekly Industry Intelligence Researcher
 
-```json
+\`\`\`json
 {
   "name": "Weekly_Industry_Intelligence_Research",
   "trigger": {
@@ -694,11 +694,11 @@ API Keys Needed:
     }
   ]
 }
-```
+\`\`\`
 
 ### Required Database Tables for N8N
 
-```sql
+\`\`\`sql
 -- Modified user_next_steps table to store JSON
 ALTER TABLE user_next_steps 
 ADD COLUMN IF NOT EXISTS steps_json JSONB,
@@ -728,11 +728,11 @@ CREATE TABLE IF NOT EXISTS ai_research_logs (
   user_feedback TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
-```
+\`\`\`
 
 ### Integration with V0.dev Frontend
 
-```typescript
+\`\`\`typescript
 // api/generate-next-steps.ts
 export async function generateNextSteps(assessmentId: number) {
   // Trigger N8N workflow
@@ -749,11 +749,11 @@ export async function generateNextSteps(assessmentId: number) {
   
   return nextSteps;
 }
-```
+\`\`\`
 
 ### Environment Variables to Add
 
-```env
+\`\`\`env
 # N8N Configuration
 N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook
 N8N_API_KEY=your_n8n_api_key
@@ -766,7 +766,7 @@ PERPLEXITY_API_KEY=pplx-...
 # Feature Flags
 USE_AI_RESEARCH=true
 AI_RESEARCH_DEPTH=deep  # deep | moderate | light
-```
+\`\`\`
 
 ---
 
@@ -774,7 +774,7 @@ AI_RESEARCH_DEPTH=deep  # deep | moderate | light
 
 ### Critical Metrics to Track from Day 1:
 
-```javascript
+\`\`\`javascript
 // analytics.ts
 const trackEvent = (eventType, eventData) => {
   // Send to your analytics (Mixpanel, Amplitude, etc.)
@@ -791,7 +791,7 @@ trackEvent('assessment_completed', { score, time_to_complete });
 trackEvent('dashboard_viewed', { return_visit: boolean });
 trackEvent('newsletter_opened', { type: 'role' });
 trackEvent('share_clicked', { platform: 'linkedin' });
-```
+\`\`\`
 
 ---
 
@@ -831,7 +831,7 @@ trackEvent('share_clicked', { platform: 'linkedin' });
 ## 💻 QUICK START CODE (React/TypeScript with Neon)
 
 ### 1. Database Connection (Neon/Postgres):
-```typescript
+\`\`\`typescript
 // lib/database.ts
 import { Pool } from '@neondatabase/serverless'
 
@@ -932,10 +932,10 @@ export const updateStreak = async (userId: number): Promise<void> => {
   
   await pool.query(updateQuery, [newCount, today, userId])
 }
-```
+\`\`\`
 
 ### 2. Score Calculation (TypeScript):
-```typescript
+\`\`\`typescript
 // lib/calculations.ts
 interface AssessmentData {
   question_1_journey: string
@@ -984,7 +984,7 @@ export const getIndustryAverage = (industry: string): number => {
   }
   return averages[industry.toLowerCase()] || 55
 }
-```
+\`\`\`
 
 ---
 
@@ -1013,7 +1013,7 @@ Everything else is iteration and improvement.
 
 When building components in V0.dev, use this exact context:
 
-```typescript
+\`\`\`typescript
 I need a React TypeScript component for [component name] that follows these UX principles:
 
 MARKETING PRINCIPLES:
@@ -1089,4 +1089,4 @@ Use @neondatabase/serverless for database.
 No Supabase, no Firebase, no UUID types.
 Column names must match exactly (question_1_journey not journey).
 Always include empathetic loading states and error messages.
-```
+\`\`\`

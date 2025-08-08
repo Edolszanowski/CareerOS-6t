@@ -26,4 +26,3 @@ npm-debug.log*
 # Local notes
 *.local.md
 scratch/
-/src/generated/prisma

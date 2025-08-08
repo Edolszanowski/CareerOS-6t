@@ -1,114 +1,199 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft, Mail, User, Building, Briefcase } from 'lucide-react'
 import { useOnboarding } from "@/contexts/onboarding-context"
-import { createUser } from "@/actions/user-actions"
-import { ArrowLeft, Shield, Mail } from "lucide-react"
-import { ProgressIndicator } from "./progress-indicator"
 
-export function ContactInfoForm() {
-  const { nextStep, prevStep, setUserId, userData } = useOnboarding()
+interface ContactInfoFormProps {
+  onNext: () => void
+  onPrev: () => void
+}
+
+export function ContactInfoForm({ onNext, onPrev }: ContactInfoFormProps) {
+  const { updateUserData, userData } = useOnboarding()
   const [formData, setFormData] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
+    firstName: userData.firstName || "",
+    lastName: userData.lastName || "",
+    email: userData.email || "",
+    jobTitle: userData.jobTitle || "",
+    company: userData.company || ""
   })
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    setError("")
-
-    const result = await createUser(formData)
-
-    if (result.success && result.userId) {
-      setUserId(result.userId)
-      nextStep()
-    } else {
-      setError(result.error || "Failed to create account")
+    
+    if (!formData.firstName || !formData.email || !formData.jobTitle) {
+      return
     }
 
-    setIsLoading(false)
+    setIsSubmitting(true)
+
+    try {
+      // Update user data
+      updateUserData(formData)
+      
+      // Here you would typically submit to your API
+      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      
+      onNext()
+    } catch (error) {
+      console.error('Error submitting contact info:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
+  const isValid = formData.firstName.trim() && formData.email.trim() && formData.jobTitle.trim()
+
   return (
-    <>
-      <ProgressIndicator />
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 pt-24">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" onClick={prevStep}>
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <div>
-                <CardTitle>Save Your Personalized Strategy</CardTitle>
-                <p className="text-sm text-gray-600">Just need a few details to create your account</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, firstName: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, lastName: e.target.value }))}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                  required
-                />
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Shield className="w-4 h-4 text-green-600" />
-                  <span>Your information is secure and never shared</span>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                  <Mail className="w-4 h-4 text-blue-600" />
-                  <span>We'll send you your personalized career strategy</span>
-                </div>
-              </div>
-
-              {error && <div className="text-red-600 text-sm">{error}</div>}
-
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700" disabled={isLoading}>
-                {isLoading ? "Creating Your Account..." : "Create My Career OS Account"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-white/20">
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="sm" onClick={onPrev} className="p-1">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <div className="text-sm font-medium text-gray-900">Almost Done!</div>
+            <div className="text-xs text-gray-500">Get your personalized results</div>
+          </div>
+        </div>
+        <div className="text-lg font-bold">CareerOS</div>
       </div>
-    </>
+
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="max-w-md mx-auto w-full">
+          <Card className="bg-white/90 backdrop-blur-sm shadow-xl">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-gray-900">
+                Get Your Personalized Results
+              </CardTitle>
+              <p className="text-gray-600">
+                We'll send your AI readiness report and personalized weekly insights based on your role and industry
+              </p>
+            </CardHeader>
+            
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                      First Name *
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        id="firstName"
+                        type="text"
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        className="pl-10"
+                        placeholder="John"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                      Last Name
+                    </Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                      placeholder="Doe"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="jobTitle" className="text-sm font-medium text-gray-700">
+                    Job Title *
+                  </Label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      id="jobTitle"
+                      type="text"
+                      value={formData.jobTitle}
+                      onChange={(e) => handleInputChange('jobTitle', e.target.value)}
+                      className="pl-10"
+                      placeholder="Marketing Manager"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    💡 We'll personalize your weekly insights based on your specific role
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                    Email Address *
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      className="pl-10"
+                      placeholder="john@company.com"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="company" className="text-sm font-medium text-gray-700">
+                    Company (Optional)
+                  </Label>
+                  <div className="relative">
+                    <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Input
+                      id="company"
+                      type="text"
+                      value={formData.company}
+                      onChange={(e) => handleInputChange('company', e.target.value)}
+                      className="pl-10"
+                      placeholder="Your Company"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <Button
+                    type="submit"
+                    disabled={!isValid || isSubmitting}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-4 text-base font-medium disabled:opacity-50"
+                  >
+                    {isSubmitting ? "Getting Your Results..." : "Get My AI Readiness Report"}
+                  </Button>
+                </div>
+
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <p className="text-xs text-blue-700 text-center">
+                    🎯 <strong>Personalized for you:</strong> Your role-specific insights will help you stay ahead in your field. We respect your privacy and you can unsubscribe anytime.
+                  </p>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   )
 }
