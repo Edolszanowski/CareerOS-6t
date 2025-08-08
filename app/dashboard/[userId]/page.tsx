@@ -155,8 +155,9 @@ export default function DashboardPage({ params }: DashboardPageProps) {
         <div className="lg:col-span-2">
           <Suspense fallback={<ComparisonChartSkeleton />}>
             <IndustryComparisonChart 
-              userScore={85} 
-              industry="Technology & Software" 
+              userScore={85}
+              userIndustry="technology"
+              userRoleLevel="management"
             />
           </Suspense>
         </div>

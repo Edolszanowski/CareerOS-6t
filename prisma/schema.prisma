@@ -1,0 +1,346 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model accountability_partners {
+  id                 Int              @id @default(autoincrement())
+  user_id            Int?
+  goal_id            Int?
+  partner_email      String?          @db.VarChar(255)
+  partner_name       String?          @db.VarChar(255)
+  partner_role       String?          @db.VarChar(50)
+  check_in_frequency Int?
+  last_check_in      DateTime?        @db.Timestamp(6)
+  next_check_in      DateTime?        @db.Date
+  is_active          Boolean?         @default(true)
+  created_at         DateTime?        @default(now()) @db.Timestamp(6)
+  goals_hierarchy    goals_hierarchy? @relation(fields: [goal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users              users?           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model ai_assessments {
+  id                        Int       @id @default(autoincrement())
+  user_id                   Int?
+  email                     String    @db.VarChar(255)
+  question_1_journey        String?   @db.VarChar(50)
+  question_2_industry       String?   @db.VarChar(100)
+  question_3a_level         String?   @db.VarChar(50)
+  question_3b_role_title    String?   @db.VarChar(100)
+  question_4_knowledge      String?   @db.VarChar(50)
+  question_5_automation_pct Int?
+  question_6_superpower     String?   @db.VarChar(50)
+  question_7_learning_style String?   @db.VarChar(50)
+  question_8_goal           String?   @db.VarChar(50)
+  ai_readiness_score        Int?      @default(0)
+  completed_at              DateTime? @default(now()) @db.Timestamp(6)
+  created_at                DateTime? @default(now()) @db.Timestamp(6)
+  updated_at                DateTime? @default(now()) @db.Timestamp(6)
+  users                     users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([completed_at], map: "idx_ai_assessments_completed_at")
+  @@index([email], map: "idx_ai_assessments_email")
+  @@index([ai_readiness_score], map: "idx_ai_assessments_score")
+  @@index([user_id], map: "idx_ai_assessments_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model assessment_responses {
+  id                        Int       @id @default(autoincrement())
+  user_id                   Int?
+  question_1_journey        String?   @db.VarChar(20)
+  question_2_industry       String?   @db.VarChar(100)
+  question_3a_level         String?   @db.VarChar(20)
+  question_3b_role_title    String?   @db.VarChar(100)
+  question_4_knowledge      String?   @db.VarChar(20)
+  question_5_automation_pct Int?
+  question_6_superpower     String?   @db.VarChar(20)
+  question_7_learning_style String?   @db.VarChar(20)
+  question_8_goal           String?   @db.VarChar(20)
+  ai_readiness_score        Int?
+  completed_at              DateTime? @default(now()) @db.Timestamp(6)
+  updated_at                DateTime? @default(now()) @db.Timestamp(6)
+  users                     users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_assessment_user_id")
+}
+
+model employer_leads {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique @db.VarChar(255)
+  first_name     String?   @db.VarChar(100)
+  last_name      String?   @db.VarChar(100)
+  company        String?   @db.VarChar(200)
+  job_title      String?   @db.VarChar(200)
+  team_size      String?   @db.VarChar(50)
+  industry       String?   @db.VarChar(100)
+  employer_tools String[]
+  user_type      String?   @default("employer") @db.VarChar(50)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+
+  @@index([email], map: "idx_employer_leads_email")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model goal_dependencies {
+  id                                                                    Int              @id @default(autoincrement())
+  goal_id                                                               Int?
+  depends_on_goal_id                                                    Int?
+  dependency_type                                                       String?          @db.VarChar(20)
+  notes                                                                 String?
+  created_at                                                            DateTime?        @default(now()) @db.Timestamp(6)
+  goals_hierarchy_goal_dependencies_depends_on_goal_idTogoals_hierarchy goals_hierarchy? @relation("goal_dependencies_depends_on_goal_idTogoals_hierarchy", fields: [depends_on_goal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  goals_hierarchy_goal_dependencies_goal_idTogoals_hierarchy            goals_hierarchy? @relation("goal_dependencies_goal_idTogoals_hierarchy", fields: [goal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model goal_habits {
+  id                Int              @id @default(autoincrement())
+  goal_id           Int?
+  habit_title       String?          @db.VarChar(255)
+  habit_description String?
+  frequency         String?          @db.VarChar(20)
+  time_of_day       String?          @db.VarChar(20)
+  duration_minutes  Int?
+  streak_current    Int?             @default(0)
+  streak_best       Int?             @default(0)
+  total_completions Int?             @default(0)
+  is_keystone_habit Boolean?         @default(false)
+  created_at        DateTime?        @default(now()) @db.Timestamp(6)
+  goals_hierarchy   goals_hierarchy? @relation(fields: [goal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model goal_milestones {
+  id                 Int              @id @default(autoincrement())
+  goal_id            Int?
+  milestone_title    String?          @db.VarChar(255)
+  target_date        DateTime?        @db.Date
+  completed_date     DateTime?        @db.Date
+  celebration_plan   String?
+  reward_description String?
+  is_celebrated      Boolean?         @default(false)
+  evidence_url       String?
+  reflection_notes   String?
+  created_at         DateTime?        @default(now()) @db.Timestamp(6)
+  goals_hierarchy    goals_hierarchy? @relation(fields: [goal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model goal_reflections {
+  id                   Int              @id @default(autoincrement())
+  goal_id              Int?
+  reflection_type      String?          @db.VarChar(20)
+  what_went_well       String?
+  what_was_challenging String?
+  lessons_learned      String?
+  energy_level         Int?
+  mood_rating          Int?
+  gratitude_notes      String?
+  next_actions         String?
+  created_at           DateTime?        @default(now()) @db.Timestamp(6)
+  goals_hierarchy      goals_hierarchy? @relation(fields: [goal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model goal_resources {
+  id                    Int              @id @default(autoincrement())
+  goal_id               Int?
+  resource_type         String?          @db.VarChar(30)
+  resource_description  String?
+  estimated_cost        Decimal?         @db.Decimal(10, 2)
+  time_investment_hours Int?
+  acquisition_plan      String?
+  is_acquired           Boolean?         @default(false)
+  acquired_date         DateTime?        @db.Date
+  created_at            DateTime?        @default(now()) @db.Timestamp(6)
+  goals_hierarchy       goals_hierarchy? @relation(fields: [goal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model goals_hierarchy {
+  id                                                                      Int                       @id @default(autoincrement())
+  user_id                                                                 Int?
+  parent_goal_id                                                          Int?
+  goal_type                                                               String?                   @db.VarChar(20)
+  goal_category                                                           String?                   @db.VarChar(50)
+  title                                                                   String                    @db.VarChar(500)
+  description                                                             String?
+  why_important                                                           String?
+  success_criteria                                                        Json?
+  target_date                                                             DateTime?                 @db.Date
+  actual_date                                                             DateTime?                 @db.Date
+  status                                                                  String?                   @default("not_started") @db.VarChar(20)
+  progress_percentage                                                     Int?                      @default(0)
+  energy_required                                                         Int?
+  excitement_level                                                        Int?
+  ai_generated                                                            Boolean?                  @default(false)
+  created_at                                                              DateTime?                 @default(now()) @db.Timestamp(6)
+  updated_at                                                              DateTime?                 @default(now()) @db.Timestamp(6)
+  accountability_partners                                                 accountability_partners[]
+  goal_dependencies_goal_dependencies_depends_on_goal_idTogoals_hierarchy goal_dependencies[]       @relation("goal_dependencies_depends_on_goal_idTogoals_hierarchy")
+  goal_dependencies_goal_dependencies_goal_idTogoals_hierarchy            goal_dependencies[]       @relation("goal_dependencies_goal_idTogoals_hierarchy")
+  goal_habits                                                             goal_habits[]
+  goal_milestones                                                         goal_milestones[]
+  goal_reflections                                                        goal_reflections[]
+  goal_resources                                                          goal_resources[]
+  goals_hierarchy                                                         goals_hierarchy?          @relation("goals_hierarchyTogoals_hierarchy", fields: [parent_goal_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_goals_hierarchy                                                   goals_hierarchy[]         @relation("goals_hierarchyTogoals_hierarchy")
+  users                                                                   users?                    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model life_vision {
+  id                Int       @id @default(autoincrement())
+  user_id           Int?
+  vision_statement  String?
+  why_statement     String?
+  values_keywords   String[]
+  life_wheel_scores Json?
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+  review_frequency  Int?      @default(90)
+  last_reviewed     DateTime? @db.Timestamp(6)
+  vision_version    Int?      @default(1)
+  users             users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model metrics_tracking {
+  id           Int       @id @default(autoincrement())
+  user_id      Int?
+  metric_type  String?   @db.VarChar(50)
+  metric_value Decimal?  @db.Decimal(10, 2)
+  metric_unit  String?   @db.VarChar(20)
+  logged_at    DateTime? @default(now()) @db.Timestamp(6)
+  source       String?   @db.VarChar(20)
+  users        users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_metrics_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model module_progress {
+  id                    Int       @id @default(autoincrement())
+  user_id               Int?
+  module_id             String?   @db.VarChar(50)
+  module_name           String?   @db.VarChar(200)
+  started_at            DateTime? @default(now()) @db.Timestamp(6)
+  completed_at          DateTime? @db.Timestamp(6)
+  completion_percentage Int?      @default(0)
+  time_spent_minutes    Int?      @default(0)
+  users                 users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_module_progress_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model newsletter_subscriptions {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int?
+  newsletter_type    String?   @db.VarChar(20)
+  newsletter_segment String?   @db.VarChar(100)
+  subscribed         Boolean?  @default(true)
+  subscription_date  DateTime? @default(now()) @db.Timestamp(6)
+  last_sent          DateTime? @db.Timestamp(6)
+  open_count         Int?      @default(0)
+  click_count        Int?      @default(0)
+  users              users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_newsletter_user_id")
+}
+
+model onboarding_progress {
+  id              Int       @id @default(autoincrement())
+  user_id         Int?
+  current_step    Int?      @default(1)
+  completed_steps Int[]     @default([])
+  is_completed    Boolean?  @default(false)
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+  updated_at      DateTime? @default(now()) @db.Timestamp(6)
+  users           users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_onboarding_progress_user_id")
+}
+
+model onboarding_progresses {
+  id             Int       @id @default(autoincrement())
+  user_id        Int?
+  step_completed Int?      @default(0)
+  is_complete    Boolean?  @default(false)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  users          users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_onboarding_user_id")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model user_journey_stages {
+  id                   Int       @id @default(autoincrement())
+  user_id              Int?
+  current_stage        Int?      @default(1)
+  stage_1_completed    Boolean?  @default(false)
+  stage_2_completed    Boolean?  @default(false)
+  stage_3_completed    Boolean?  @default(false)
+  stage_4_completed    Boolean?  @default(false)
+  stage_5_completed    Boolean?  @default(false)
+  stage_1_completed_at DateTime? @db.Timestamp(6)
+  stage_2_completed_at DateTime? @db.Timestamp(6)
+  stage_3_completed_at DateTime? @db.Timestamp(6)
+  stage_4_completed_at DateTime? @db.Timestamp(6)
+  stage_5_completed_at DateTime? @db.Timestamp(6)
+  created_at           DateTime? @default(now()) @db.Timestamp(6)
+  updated_at           DateTime? @default(now()) @db.Timestamp(6)
+  users                users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([current_stage], map: "idx_user_journey_stages_current_stage")
+  @@index([user_id], map: "idx_user_journey_stages_user_id")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user_profiles {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  bio        String?
+  avatar_url String?   @db.VarChar(500)
+  location   String?   @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  first_name String?   @db.VarChar(100)
+  last_name  String?   @db.VarChar(100)
+  job_title  String?   @db.VarChar(200)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([job_title], map: "idx_user_profiles_job_title")
+  @@index([user_id], map: "idx_user_profiles_user_id")
+}
+
+model users {
+  id                       Int                        @id @default(autoincrement())
+  email                    String                     @unique @db.VarChar(255)
+  name                     String?                    @db.VarChar(255)
+  created_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  last_login               DateTime?                  @db.Timestamp(6)
+  streak_count             Int?                       @default(0)
+  streak_last_date         DateTime?                  @db.Date
+  accountability_partners  accountability_partners[]
+  ai_assessments           ai_assessments[]
+  assessment_responses     assessment_responses[]
+  goals_hierarchy          goals_hierarchy[]
+  life_vision              life_vision[]
+  metrics_tracking         metrics_tracking[]
+  module_progress          module_progress[]
+  newsletter_subscriptions newsletter_subscriptions[]
+  onboarding_progress      onboarding_progress[]
+  onboarding_progresses    onboarding_progresses[]
+  user_journey_stages      user_journey_stages[]
+  user_profiles            user_profiles[]
+
+  @@index([email], map: "idx_users_email")
+}
