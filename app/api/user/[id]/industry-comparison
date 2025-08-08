@@ -1,0 +1,9 @@
+// GET /api/user/[id]/industry-comparison
+{
+  user_score: 70,
+  industry_avg: 52,
+  role_avg: 58, 
+  user_percentile: 73,
+  industry: "Technology",
+  total_industry_users: 1847
+}
