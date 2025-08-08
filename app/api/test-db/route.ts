@@ -2,42 +2,39 @@ import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
+    // Import the database connection dynamically
     const { sql } = await import("@/lib/db")
-    
+
     // Test basic connection
     const result = await sql`SELECT 1 as test, NOW() as timestamp`
-    
-    // Get current database name
-    const dbName = await sql`SELECT current_database() as database_name`
-    
-    // Get ALL tables in current database
-    const allTables = await sql`
+
+    // Test if our tables exist
+    const tablesCheck = await sql`
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
+      AND table_name IN ('users', 'user_profile', 'onboarding_progress')
       ORDER BY table_name
     `
-    
-    // Check for our specific tables
-    const ourTables = await sql`
-      SELECT table_name 
-      FROM information_schema.tables 
-      WHERE table_schema = 'public' 
-      AND table_name IN ('users', 'user_profiles', 'assessment_responses')
-      ORDER BY table_name
-    `
-    
+
     return NextResponse.json({
       success: true,
       message: "Database connection successful",
-      currentDatabase: dbName[0]?.database_name,
-      allTables: allTables.map(t => t.table_name),
-      ourTables: ourTables.map(t => t.table_name),
-      tablesExist: ourTables.length === 3,
-      databaseUrl: "Environment variable set"
+      connection: result[0],
+      tables: tablesCheck.map((t) => t.table_name),
+      tablesExist: tablesCheck.length === 3,
+      databaseUrl: process.env.DATABASE_URL ? "Environment variable set" : "Using fallback URL",
     })
   } catch (error) {
     console.error("Database connection error:", error)
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown database error",
+        databaseUrl: process.env.DATABASE_URL ? "Environment variable set" : "Using fallback URL",
+      },
+      { status: 500 },
+    )
   }
 }

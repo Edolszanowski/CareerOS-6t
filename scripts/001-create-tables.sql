@@ -11,7 +11,21 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Create user_profile table for career-related information
-
+CREATE TABLE IF NOT EXISTS user_profile (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  current_role VARCHAR(200),
+  experience_level VARCHAR(50),
+  industry VARCHAR(100),
+  career_goals TEXT,
+  skills TEXT[], -- Array of skills
+  education_level VARCHAR(100),
+  location VARCHAR(200),
+  remote_preference VARCHAR(50),
+  salary_expectation INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Create onboarding_progress table to track user progress
 CREATE TABLE IF NOT EXISTS onboarding_progress (

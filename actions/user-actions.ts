@@ -6,12 +6,14 @@ export interface UserData {
   email: string
   firstName: string
   lastName: string
+  jobTitle?: string
   phone?: string
   dateOfBirth?: string
 }
 
 export interface ProfileData {
   userType?: string
+  jobTitle?: string
   toolsInterest?: string[]
   currentRole?: string
   experienceLevel?: string
@@ -65,6 +67,14 @@ export async function createUser(userData: UserData) {
       VALUES (${userId}, 1, ARRAY[1])
     `
 
+    // Create initial user profile with job title if provided
+    if (userData.jobTitle) {
+      await sql`
+        INSERT INTO user_profiles (user_id, job_title)
+        VALUES (${userId}, ${userData.jobTitle})
+      `
+    }
+
     return { success: true, userId }
   } catch (error) {
     console.error("Error creating user:", error)
@@ -86,14 +96,15 @@ export async function updateUserProfile(userId: number, profileData: ProfileData
 
     // First check if profile exists
     const existingProfile = await sql`
-      SELECT id FROM user_profile WHERE user_id = ${userId}
+      SELECT id FROM user_profiles WHERE user_id = ${userId}
     `
 
     if (existingProfile.length > 0) {
       // Update existing profile
       await sql`
-        UPDATE user_profile SET
+        UPDATE user_profiles SET
           "user_type" = ${profileData.userType || null},
+          "job_title" = ${profileData.jobTitle || null},
           "tools_interest" = ${profileData.toolsInterest || []},
           "current_role" = ${profileData.currentRole || null},
           "experience_level" = ${profileData.experienceLevel || null},
@@ -110,12 +121,12 @@ export async function updateUserProfile(userId: number, profileData: ProfileData
     } else {
       // Insert new profile
       await sql`
-        INSERT INTO user_profile (
-          user_id, "user_type", "tools_interest", "current_role", "experience_level", "industry", "career_goals",
+        INSERT INTO user_profiles (
+          user_id, "user_type", "job_title", "tools_interest", "current_role", "experience_level", "industry", "career_goals",
           "skills", "education_level", "location", "remote_preference", "salary_expectation"
         )
         VALUES (
-          ${userId}, ${profileData.userType || null}, ${profileData.toolsInterest || []}, 
+          ${userId}, ${profileData.userType || null}, ${profileData.jobTitle || null}, ${profileData.toolsInterest || []}, 
           ${profileData.currentRole || null}, ${profileData.experienceLevel || null}, 
           ${profileData.industry || null}, ${profileData.careerGoals || null}, 
           ${profileData.skills || []}, ${profileData.educationLevel || null}, 
@@ -187,6 +198,7 @@ export async function getUserData(userId: number) {
         u.date_of_birth,
         u.created_at,
         p."user_type",
+        p."job_title",
         p."tools_interest",
         p."current_role",
         p."experience_level",
@@ -201,7 +213,7 @@ export async function getUserData(userId: number) {
         op.completed_steps,
         op.is_completed
       FROM users u
-      LEFT JOIN user_profile p ON u.id = p.user_id
+      LEFT JOIN user_profiles p ON u.id = p.user_id
       LEFT JOIN onboarding_progress op ON u.id = op.user_id
       WHERE u.id = ${userId}
     `
