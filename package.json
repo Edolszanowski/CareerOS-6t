@@ -12,6 +12,7 @@
     "@ai-sdk/openai": "latest",
     "@hookform/resolvers": "^3.9.0",
     "@neondatabase/serverless": "latest",
+    "@prisma/client": "6.13.0",
     "@radix-ui/react-accordion": "latest",
     "@radix-ui/react-alert-dialog": "latest",
     "@radix-ui/react-aspect-ratio": "latest",
@@ -31,7 +32,6 @@
     "@radix-ui/react-scroll-area": "latest",
     "@radix-ui/react-select": "latest",
     "@radix-ui/react-separator": "latest",
-    "@radix-ui/react-sheet": "^1.1.0",
     "@radix-ui/react-slider": "latest",
     "@radix-ui/react-slot": "latest",
     "@radix-ui/react-switch": "latest",
@@ -50,6 +50,7 @@
     "lucide-react": "^0.454.0",
     "next": "15.2.4",
     "next-themes": "latest",
+    "prisma": "6.13.0",
     "react": "^19",
     "react-day-picker": "latest",
     "react-dom": "^19",
@@ -59,7 +60,6 @@
     "sonner": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "vaul": "latest",
     "zod": "^3.23.8"
   },
   "devDependencies": {
