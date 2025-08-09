@@ -24,12 +24,16 @@ type ApiResponse =
     }
   | { ok: false; error: string };
 
-export function IndustryComparisonChart(props: {
-  userIndustry: string;
-  userRoleLevel?: string | null;
+export default function IndustryComparisonChart(props: {
+  /** e.g., "Technology & Software" or "technology" */
+  industry: string;
+  /** e.g., "management" (optional) */
+  roleLevel?: string | null;
+  /** user’s score (optional, display only) */
   userScore?: number | null;
 }) {
-  const { userIndustry, userRoleLevel, userScore } = props;
+  const { industry, roleLevel, userScore } = props;
+
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [stats, setStats] = React.useState<Stats | null>(null);
@@ -37,15 +41,15 @@ export function IndustryComparisonChart(props: {
   React.useEffect(() => {
     let cancelled = false;
 
-    async function fetchComparisonData() {
+    async function run() {
       try {
         setLoading(true);
         setError(null);
 
         const params = new URLSearchParams({
-          industry: (userIndustry || "").toLowerCase(),
+          industry: (industry || "").toLowerCase(),
         });
-        if (userRoleLevel) params.set("role_level", userRoleLevel.toLowerCase());
+        if (roleLevel) params.set("role_level", roleLevel.toLowerCase());
 
         const res = await fetch(`/api/industry-stats?${params.toString()}`, {
           cache: "no-store",
@@ -55,6 +59,7 @@ export function IndustryComparisonChart(props: {
         if (!json || (json as any).ok !== true) {
           throw new Error((json as any)?.error || "No assessment data available for comparison");
         }
+
         if (!cancelled) setStats(json.stats);
       } catch (e: any) {
         if (!cancelled) setError(e?.message ?? "Failed to load comparison data");
@@ -63,11 +68,11 @@ export function IndustryComparisonChart(props: {
       }
     }
 
-    fetchComparisonData();
+    run();
     return () => {
       cancelled = true;
     };
-  }, [userIndustry, userRoleLevel]);
+  }, [industry, roleLevel]);
 
   if (loading) {
     return <div className="p-4 rounded-2xl border">Loading industry comparison…</div>;
@@ -78,15 +83,14 @@ export function IndustryComparisonChart(props: {
       <div className="p-4 rounded-2xl border">
         <h3 className="text-lg font-semibold mb-2">Industry comparison</h3>
         <p className="text-gray-600">
-          Not enough peer data yet for <strong>{userIndustry}</strong>
-          {userRoleLevel ? (
+          Not enough peer data yet for <strong>{industry}</strong>
+          {roleLevel ? (
             <>
               {" "}
-              at <strong>{userRoleLevel}</strong> level
+              at <strong>{roleLevel}</strong> level
             </>
           ) : null}
-          . We’ll show comparisons as soon as we have a few more assessments. No judgment, just
-          support.
+          . We’ll show comparisons as soon as we have a few more assessments. No judgment, just support.
         </p>
       </div>
     );

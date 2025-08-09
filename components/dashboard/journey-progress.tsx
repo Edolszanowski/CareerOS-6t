@@ -1,234 +1,153 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { CheckCircle, Circle, Clock } from 'lucide-react'
+import * as React from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface Stage {
-  id: number
-  name: string
-  description: string
-  completed: boolean
-  completedAt: string | null
-  current: boolean
-}
+type JourneyLatest = {
+  ai_readiness_score?: number | null;
+  question_2_industry?: string | null;
+  question_3a_level?: string | null;
+  completed_at?: string | null;
+};
 
-interface JourneyData {
-  user: {
-    id: number
-    email: string
-    jobTitle: string
-  }
-  assessment: {
-    completed: boolean
-    score: number
-    familiarity: string
-    understandingLevel: string
-    completedAt: string
-  }
-  journey: {
-    currentStage: number
-    stages: Stage[]
-    completedStages: number
-    totalStages: number
-    progressPercentage: number
-    createdAt: string
-    updatedAt: string
-  }
-}
+type ApiOk = {
+  ok: true;
+  userId: number;
+  latest?: JourneyLatest | null;
+};
 
-interface JourneyProgressProps {
-  userId: number
-}
+type ApiErr = { ok: false; error?: string };
 
-export function JourneyProgress({ userId }: JourneyProgressProps) {
-  const [journeyData, setJourneyData] = useState<JourneyData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export function JourneyProgress({ userId }: { userId: number }) {
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [latest, setLatest] = React.useState<JourneyLatest | null>(null);
 
-  useEffect(() => {
-    const fetchJourneyData = async () => {
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function fetchJourneyData() {
       try {
-        setLoading(true)
-        const response = await fetch(`/api/user-journey/${userId}`)
-        const result = await response.json()
-        
-        if (!response.ok) {
-          throw new Error(result.error || 'Failed to fetch journey data')
+        setLoading(true);
+        setError(null);
+
+        const res = await fetch(`/api/user-journey/${userId}`, { cache: "no-store" });
+        // Defensive: non-200 still might have JSON
+        let json: ApiOk | ApiErr | any = null;
+        try {
+          json = await res.json();
+        } catch {
+          throw new Error("Invalid response format"); // no JSON body
         }
-        
-        if (result.success) {
-          setJourneyData(result.data)
-        } else {
-          throw new Error(result.error || 'Invalid response format')
+
+        // Accept the current API: { ok:true, userId, latest:{...} }
+        if (!json || json.ok !== true) {
+          // Show server-provided error if present
+          const msg = (json && json.error) ? json.error : "No journey data yet";
+          throw new Error(msg);
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred')
-        console.error('Error fetching journey data:', err)
+
+        const l = (json as ApiOk).latest ?? null;
+
+        if (!cancelled) setLatest(l);
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message ?? "Failed to load journey");
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false);
       }
     }
 
-    if (userId) {
-      fetchJourneyData()
-    }
-  }, [userId])
+    fetchJourneyData();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
 
   if (loading) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>AI Journey Progress</CardTitle>
-          <CardDescription>Loading your progress...</CardDescription>
+          <CardTitle>Journey Progress</CardTitle>
+          <CardDescription>Loading your latest progress…</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="h-4 bg-gray-200 rounded animate-pulse" />
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
-              ))}
-            </div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3" />
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-1/2" />
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>AI Journey Progress</CardTitle>
-          <CardDescription>Error loading progress</CardDescription>
+          <CardTitle>Journey Progress</CardTitle>
+          <CardDescription>We couldn’t load your progress.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-red-600 p-4 bg-red-50 rounded-lg">
-            <p className="font-medium">Unable to load journey data</p>
-            <p className="text-sm mt-1">{error}</p>
-          </div>
+          <p className="text-gray-600">
+            {error}. No worries — as soon as you complete an assessment, we’ll start tracking your journey here.
+          </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  if (!journeyData) {
+  if (!latest) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>AI Journey Progress</CardTitle>
-          <CardDescription>No journey data available</CardDescription>
+          <CardTitle>Journey Progress</CardTitle>
+          <CardDescription>No journey data yet</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500">Please complete your assessment to begin your AI journey.</p>
+          <p className="text-gray-600">
+            Take the assessment to kick off your personalized AI journey. We’ll show progress and milestones here.
+          </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
-  const { user, assessment, journey } = journeyData
+  const score = latest.ai_readiness_score ?? "—";
+  const industry = latest.question_2_industry ?? "—";
+  const level = latest.question_3a_level ?? "—";
+  const completedAt = latest.completed_at ? new Date(latest.completed_at).toLocaleString() : "—";
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>AI Journey Progress</CardTitle>
-        <CardDescription>
-          {user.jobTitle && `${user.jobTitle} • `}
-          Stage {journey.currentStage} of {journey.totalStages}
-        </CardDescription>
+        <CardTitle>Journey Progress</CardTitle>
+        <CardDescription>Your latest assessment snapshot</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Overall Progress */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Overall Progress</span>
-            <span>{journey.progressPercentage}% Complete</span>
-          </div>
-          <Progress value={journey.progressPercentage} className="h-2" />
-        </div>
-
-        {/* Assessment Summary */}
-        {assessment.completed && (
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-blue-900">AI Readiness Score</p>
-                <p className="text-sm text-blue-700">
-                  {assessment.familiarity} • {assessment.understandingLevel}
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-blue-900">{assessment.score}</div>
-                <div className="text-sm text-blue-700">out of 100</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Stage Progress */}
+      <CardContent>
         <div className="space-y-3">
-          <h4 className="font-medium">Journey Stages</h4>
-          {journey.stages.map((stage) => (
-            <div
-              key={stage.id}
-              className={`flex items-center space-x-3 p-3 rounded-lg border ${
-                stage.current
-                  ? 'border-blue-200 bg-blue-50'
-                  : stage.completed
-                  ? 'border-green-200 bg-green-50'
-                  : 'border-gray-200 bg-gray-50'
-              }`}
-            >
-              <div className="flex-shrink-0">
-                {stage.completed ? (
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                ) : stage.current ? (
-                  <Clock className="h-5 w-5 text-blue-600" />
-                ) : (
-                  <Circle className="h-5 w-5 text-gray-400" />
-                )}
-              </div>
-              
-              <div className="flex-grow">
-                <div className="flex items-center space-x-2">
-                  <h5 className="font-medium">{stage.name}</h5>
-                  {stage.current && (
-                    <Badge variant="outline" className="text-xs">
-                      Current
-                    </Badge>
-                  )}
-                  {stage.completed && (
-                    <Badge variant="outline" className="text-xs bg-green-100 text-green-800">
-                      Complete
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600">{stage.description}</p>
-                {stage.completedAt && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Completed {new Date(stage.completedAt).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+          <div className="flex items-center justify-between rounded-xl border p-3">
+            <div className="text-sm text-gray-600">AI Readiness Score</div>
+            <div className="text-2xl font-bold">{score}</div>
+          </div>
 
-        {/* Journey Stats */}
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{journey.completedStages}</div>
-            <div className="text-sm text-gray-600">Stages Complete</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="rounded-xl border p-3">
+              <div className="text-sm text-gray-600">Industry</div>
+              <div className="text-lg font-semibold capitalize">{industry}</div>
+            </div>
+            <div className="rounded-xl border p-3">
+              <div className="text-sm text-gray-600">Role level</div>
+              <div className="text-lg font-semibold capitalize">{level}</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{journey.totalStages - journey.completedStages}</div>
-            <div className="text-sm text-gray-600">Stages Remaining</div>
-          </div>
+
+          <div className="text-sm text-gray-500">Completed: {completedAt}</div>
+          <p className="text-sm text-gray-600">
+            We’ll guide you step-by-step. As you progress, this section will reflect milestones and next best actions.
+          </p>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

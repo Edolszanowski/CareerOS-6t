@@ -1,14 +1,22 @@
-import { Suspense } from 'react'
-import { JourneyProgress } from '@/components/dashboard/journey-progress'
-import { IndustryComparisonChart } from '@/components/dashboard/industry-comparison-chart'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { User, Brain, TrendingUp, Target } from 'lucide-react'
+import { Suspense } from "react";
+// ✅ default imports (not named)
+import JourneyProgress from "@/components/dashboard/journey-progress";
+import IndustryComparisonChart from "@/components/dashboard/industry-comparison-chart";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { User, Brain, TrendingUp, Target } from "lucide-react";
 
 interface DashboardPageProps {
   params: {
-    userId: string
-  }
+    userId: string;
+  };
 }
 
 // Loading components
@@ -28,7 +36,7 @@ function JourneyProgressSkeleton() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 function ComparisonChartSkeleton() {
@@ -49,19 +57,21 @@ function ComparisonChartSkeleton() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export default function DashboardPage({ params }: DashboardPageProps) {
-  const userId = parseInt(params.userId)
+  const userId = Number.parseInt(params.userId);
 
-  if (isNaN(userId)) {
+  if (Number.isNaN(userId)) {
     return (
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader>
             <CardTitle className="text-red-600">Invalid User ID</CardTitle>
-            <CardDescription>The provided user ID is not valid.</CardDescription>
+            <CardDescription>
+              The provided user ID is not valid.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-gray-600">
@@ -70,7 +80,7 @@ export default function DashboardPage({ params }: DashboardPageProps) {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -104,7 +114,7 @@ export default function DashboardPage({ params }: DashboardPageProps) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -116,7 +126,7 @@ export default function DashboardPage({ params }: DashboardPageProps) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -128,7 +138,7 @@ export default function DashboardPage({ params }: DashboardPageProps) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
@@ -144,20 +154,21 @@ export default function DashboardPage({ params }: DashboardPageProps) {
 
       {/* Main Dashboard Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Journey Progress - Takes up 1 column */}
+        {/* Journey Progress - 1 column */}
         <div className="lg:col-span-1">
           <Suspense fallback={<JourneyProgressSkeleton />}>
             <JourneyProgress userId={userId} />
           </Suspense>
         </div>
 
-        {/* Industry Comparison - Takes up 2 columns */}
+        {/* Industry Comparison - 2 columns */}
         <div className="lg:col-span-2">
           <Suspense fallback={<ComparisonChartSkeleton />}>
-            <IndustryComparisonChart 
-              userScore={85}
-              userIndustry="technology"
+            <IndustryComparisonChart
+              // ✅ prop names expected by the component
+              userIndustry="technology & software"
               userRoleLevel="management"
+              userScore={85}
             />
           </Suspense>
         </div>
@@ -176,14 +187,14 @@ export default function DashboardPage({ params }: DashboardPageProps) {
             <div>
               <h4 className="font-medium mb-2">Journey Tracking</h4>
               <p className="text-sm text-gray-600">
-                Monitor your progress through 5 key stages of AI adoption, from initial assessment 
+                Monitor your progress through 5 key stages of AI adoption, from initial assessment
                 to full integration in your professional workflow.
               </p>
             </div>
             <div>
               <h4 className="font-medium mb-2">Industry Benchmarking</h4>
               <p className="text-sm text-gray-600">
-                Compare your AI readiness score with professionals in similar roles and industries 
+                Compare your AI readiness score with professionals in similar roles and industries
                 to understand where you stand and identify areas for improvement.
               </p>
             </div>
@@ -191,5 +202,5 @@ export default function DashboardPage({ params }: DashboardPageProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
